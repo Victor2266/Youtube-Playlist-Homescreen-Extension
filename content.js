@@ -24,6 +24,8 @@ function removePlaylist() {
 
 // Function to fetch and inject the playlist (only if on the homepage)
 async function fetchAndInjectPlaylistIfNeeded(playlistId) {
+    console.log("fetchAndInjectPlaylistIfNeeded...");
+    console.log("isOnHomepage():", isOnHomepage());
     if (isOnHomepage()) {
         await fetchAndInjectPlaylist(playlistId);
     } else {
@@ -68,6 +70,11 @@ async function fetchAndInjectPlaylist(playlistId) {
         console.error("Playlist ID not available");
         return;
     }
+    // Check authentication and then inject
+    chrome.runtime.sendMessage({ action: "checkAuthStatus" }, async (response) => {
+        isAuthenticated = response.isAuthenticated;
+    });
+    
     if (!isAuthenticated) {
         console.log("User not logged in yet.");
         return;
@@ -181,9 +188,18 @@ function injectPlaylist(playlistItems, playlistId, title, videoDurations) {
 // Mutation Observer to detect DOM changes (for navigation)
 const observer = new MutationObserver((mutations) => {
     if (isOnHomepage()) {
-        if (!document.getElementById(playlistContainerId) && currentPlaylistId) {
+        chrome.storage.sync.get(["selectedPlaylistId"], async (data) => {
+            if (data.selectedPlaylistId) {
+                currentPlaylistId = data.selectedPlaylistId;
+            }
+        });
+
+        if (!document.getElementById(playlistContainerId) && currentPlaylistId) { 
             fetchAndInjectPlaylistIfNeeded(currentPlaylistId); // Re-inject if it's gone
         }
+        //console.log("!document.getElementById(playlistContainerId): ", !document.getElementById(playlistContainerId));
+        //console.log("playlistContainerId: ", playlistContainerId);
+        //console.log("currentPlaylistId: ", currentPlaylistId);
     } else {
         console.log("Not on the homepage, removing playlist...");
         removePlaylist();
@@ -247,7 +263,7 @@ chrome.runtime.onMessage.addListener(async (request, sender, sendResponse) => {
         isAuthenticated = true;
         
     } else if (request.action === "refreshHomepage") {
-        await chrome.storage.sync.get(["rowsToShow", "itemsPerRow", "selectedPlaylistId", "playlistId"], async (data) => {
+        await chrome.storage.sync.get(["rowsToShow", "itemsPerRow", "selectedPlaylistId"], async (data) => {
             if (data.rowsToShow) {
                 // Set the number of rows to show based on the stored setting
                 rowsToShow = parseInt(data.rowsToShow, 10);
@@ -282,3 +298,11 @@ chrome.runtime.onMessage.addListener(async (request, sender, sendResponse) => {
     }
 });
 
+// Listen for URL changes (though MutationObserver is more reliable for SPA)
+window.addEventListener('popstate', () => {
+    fetchAndInjectPlaylistIfNeeded(currentPlaylistId);
+});
+
+window.addEventListener('pushstate', () => {
+    fetchAndInjectPlaylistIfNeeded(currentPlaylistId);
+});
