@@ -25,7 +25,7 @@ function removePlaylist() {
 // Function to fetch and inject the playlist (only if on the homepage)
 async function fetchAndInjectPlaylistIfNeeded(playlistId) {
     console.log("fetchAndInjectPlaylistIfNeeded...");
-    console.log("isOnHomepage():", isOnHomepage());
+    //console.log("isOnHomepage():", isOnHomepage());
     if (isOnHomepage()) {
         await fetchAndInjectPlaylist(playlistId);
     } else {
@@ -66,41 +66,42 @@ function formatDuration(isoDuration) {
 
 // Function to fetch and inject the playlist
 async function fetchAndInjectPlaylist(playlistId) {
-    if (!playlistId) {
-        console.error("Playlist ID not available");
-        return;
-    }
-    // Check authentication and then inject
-    chrome.runtime.sendMessage({ action: "checkAuthStatus" }, async (response) => {
-        isAuthenticated = response.isAuthenticated;
-    });
-    
-    if (!isAuthenticated) {
-        console.log("User not logged in yet.");
-        return;
-    }
-
-    chrome.runtime.sendMessage(
-        { action: "getPlaylistData", playlistId: playlistId },
-        async (response) => {
-            if (response && response.data && response.playlistTitle) {
-                const videoIds = response.data.map(item => item.snippet.resourceId.videoId);
-                try {
-                    const durations = await fetchVideoDurations(videoIds);
-                    injectPlaylist(response.data, playlistId, response.playlistTitle, durations);
-                } catch (error) {
-                    console.error("Error fetching video durations:", error);
-                    injectPlaylist(response.data, playlistId, response.playlistTitle, {}); // Inject without durations
-                }
-            } else {
-                console.error("Error fetching playlist data:", response.error);
-            }
+    console.log("fetchAndInjectPlaylist...");
+    getStoredSettings().then(() => {
+        if (!playlistId) {
+            console.error("Playlist ID not available");
+            return;
         }
-    );
+        if (!isAuthenticated) {
+            console.log("User not logged in yet.");
+            return;
+        }
+        console.log("fetchAndInjectPlaylist...2");
+        chrome.runtime.sendMessage(
+            { action: "getPlaylistData", playlistId: playlistId },
+            async (response) => {
+                if (response && response.data && response.playlistTitle) {
+                    const videoIds = response.data.map(item => item.snippet.resourceId.videoId);
+                    try {
+                        const durations = await fetchVideoDurations(videoIds);
+                        injectPlaylist(response.data, playlistId, response.playlistTitle, durations);
+                    } catch (error) {
+                        console.error("Error fetching video durations:", error);
+                        injectPlaylist(response.data, playlistId, response.playlistTitle, {}); // Inject without durations
+                    }
+                } else {
+                    console.error("Error fetching playlist data:", response.error);
+                }
+            }
+        );
+    })
+
+    
 }
 
 // Function to create and inject the playlist section
 function injectPlaylist(playlistItems, playlistId, title, videoDurations) {
+    console.log("Playlist injecting.");
     playlistTitle = title;
 
     const playlistContainer = document.createElement("div");
@@ -212,33 +213,41 @@ observer.observe(document.body, { subtree: true, childList: true });
 // Get initial settings and inject after DOM is ready
 document.addEventListener('DOMContentLoaded', () => {
     console.log("DOMContentLoaded event fired in content.js");
-    chrome.storage.sync.get(["rowsToShow", "itemsPerRow", "selectedPlaylistId"], async (data) => {
-        if (data.rowsToShow) {
-            // Set the number of rows to show based on the stored setting
-            rowsToShow = parseInt(data.rowsToShow, 10);
-        }
-        if (data.itemsPerRow) {
-            itemsPerRow = parseInt(data.itemsPerRow, 10);
-        }
-        if (data.selectedPlaylistId) {
-            currentPlaylistId = data.selectedPlaylistId;
-        }
 
+    getStoredSettings().then(() => {
         // Check authentication and then inject
-        chrome.runtime.sendMessage({ action: "checkAuthStatus" }, async (response) => {
-            isAuthenticated = response.isAuthenticated;
-            console.log("Authentication status on DOMContentLoaded:", isAuthenticated);
             if (isAuthenticated && isOnHomepage() && currentPlaylistId) {
                 console.log("Injecting playlist after DOMContentLoaded");
-                await fetchAndInjectPlaylistIfNeeded(currentPlaylistId);
+                fetchAndInjectPlaylistIfNeeded(currentPlaylistId);
             } else if (!isAuthenticated) {
                 console.log("User not authenticated on DOMContentLoaded.");
             } else if (!isOnHomepage()) {
                 console.log("Not on homepage on DOMContentLoaded.");
             }
         });
+    }
+);
+
+async function getStoredSettings() {
+    //console.log("getStoredSettings...");
+    return new Promise((resolve) => {
+        chrome.storage.sync.get(["rowsToShow", "itemsPerRow", "selectedPlaylistId"], (data) => {
+            if (data.rowsToShow) {
+                rowsToShow = parseInt(data.rowsToShow, 10);
+            }
+            if (data.itemsPerRow) {
+                itemsPerRow = parseInt(data.itemsPerRow, 10);
+            }
+            if (data.selectedPlaylistId) {
+                currentPlaylistId = data.selectedPlaylistId;
+            }
+            chrome.runtime.sendMessage({ action: "checkAuthStatus" }, (response) => {
+                isAuthenticated = response.isAuthenticated;
+                resolve(); // Resolve the promise, indicating that the stored settings have been retrieved and the authentication status has been checked.
+            });
+        });
     });
-});
+}
 
 
 // Listen for messages from the background script (remains largely the same)
@@ -263,46 +272,15 @@ chrome.runtime.onMessage.addListener(async (request, sender, sendResponse) => {
         isAuthenticated = true;
         
     } else if (request.action === "refreshHomepage") {
-        await chrome.storage.sync.get(["rowsToShow", "itemsPerRow", "selectedPlaylistId"], async (data) => {
-            if (data.rowsToShow) {
-                // Set the number of rows to show based on the stored setting
-                rowsToShow = parseInt(data.rowsToShow, 10);
+        getStoredSettings().then(() => {
+            if (isAuthenticated && isOnHomepage() && currentPlaylistId) {
+                fetchAndInjectPlaylistIfNeeded(currentPlaylistId);
             }
-            if (data.itemsPerRow) {
-                itemsPerRow = parseInt(data.itemsPerRow, 10);
-            }
-            if (data.selectedPlaylistId) {
-                currentPlaylistId = data.selectedPlaylistId;
-            }
-        });
+        })
         // Re-inject the playlist when the homepage is refreshed
         console.log("Refreshing homepage message received, injecting playlist...");
         
         console.log("rowsToShow:", rowsToShow);
         console.log("itemsPerRow:", itemsPerRow);
-
-        if (isOnHomepage() && currentPlaylistId && isAuthenticated) {
-            await fetchAndInjectPlaylistIfNeeded(currentPlaylistId);
-        } else {
-            // **Important:** Re-check authentication on refresh if needed
-            console.log("Rechecking Authentication");
-            chrome.runtime.sendMessage({ action: "checkAuthStatus" }, (response) => {
-                isAuthenticated = response.isAuthenticated;
-                console.log("Authentication status on refresh:", isAuthenticated);
-                if (isAuthenticated && isOnHomepage() && currentPlaylistId) {
-                    fetchAndInjectPlaylistIfNeeded(currentPlaylistId);
-                }
-            });
-        }
-
     }
-});
-
-// Listen for URL changes (though MutationObserver is more reliable for SPA)
-window.addEventListener('popstate', () => {
-    fetchAndInjectPlaylistIfNeeded(currentPlaylistId);
-});
-
-window.addEventListener('pushstate', () => {
-    fetchAndInjectPlaylistIfNeeded(currentPlaylistId);
 });
