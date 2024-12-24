@@ -194,48 +194,41 @@ const observer = new MutationObserver((mutations) => {
 // Start observing the document body for changes
 observer.observe(document.body, { subtree: true, childList: true });
 
-// Get initial settings from storage and inject if on homepage
-chrome.storage.sync.get(["rowsToShow", "itemsPerRow", "selectedPlaylistId", "playlistId"], async (data) => {
-    if (data.rowsToShow) {
-        rowsToShow = parseInt(data.rowsToShow, 10); // Ensure it's a number
-    }
-    if (data.itemsPerRow) {
-        itemsPerRow = parseInt(data.itemsPerRow, 10); // Ensure it's a number
-    }
-    if (data.selectedPlaylistId) {
-        currentPlaylistId = data.selectedPlaylistId;
-    } else if (data.playlistId) {
-        currentPlaylistId = data.playlistId;
-    }
+// Get initial settings and inject after DOM is ready
+document.addEventListener('DOMContentLoaded', () => {
+    console.log("DOMContentLoaded event fired in content.js");
+    chrome.storage.sync.get(["rowsToShow", "itemsPerRow", "selectedPlaylistId", "playlistId"], async (data) => {
+        if (data.rowsToShow) {
+            // Set the number of rows to show based on the stored setting
+            rowsToShow = parseInt(data.rowsToShow, 10);
+        }
+        if (data.itemsPerRow) {
+            itemsPerRow = parseInt(data.itemsPerRow, 10);
+        }
+        if (data.selectedPlaylistId) {
+            currentPlaylistId = data.selectedPlaylistId;
+        } else if (data.playlistId) {
+            currentPlaylistId = data.playlistId;
+        }
 
-    if (currentPlaylistId) {
-        await fetchAndInjectPlaylistIfNeeded(currentPlaylistId);
-    } else {
-        // In case playlistId is not available, particularly for the first-time users
-        chrome.runtime.sendMessage({ action: "getPlaylistId" }, async (response) => {
-            if (response && response.playlistId) {
-                currentPlaylistId = response.playlistId;
+        // Check authentication and then inject
+        chrome.runtime.sendMessage({ action: "checkAuthStatus" }, async (response) => {
+            isAuthenticated = response.isAuthenticated;
+            console.log("Authentication status on DOMContentLoaded:", isAuthenticated);
+            if (isAuthenticated && isOnHomepage() && currentPlaylistId) {
+                console.log("Injecting playlist after DOMContentLoaded");
                 await fetchAndInjectPlaylistIfNeeded(currentPlaylistId);
+            } else if (!isAuthenticated) {
+                console.log("User not authenticated on DOMContentLoaded.");
+            } else if (!isOnHomepage()) {
+                console.log("Not on homepage on DOMContentLoaded.");
             }
         });
-    }
+    });
 });
 
-// Check authentication status on page load
-chrome.runtime.sendMessage({ action: "checkAuthStatus" }, async (response) => {
-    if (response.isAuthenticated) {
-        chrome.runtime.sendMessage({ action: "getPlaylistId" }, async (response) => {
-            if (response && response.playlistId) {
-                currentPlaylistId = response.playlistId;
-                await fetchAndInjectPlaylistIfNeeded(currentPlaylistId);
-            }
-        });
-    } else {
-        console.log("User is not authenticated. Awaiting authentication.");
-    }
-});
 
-// Listen for messages from the background script
+// Listen for messages from the background script (remains largely the same)
 chrome.runtime.onMessage.addListener(async (request, sender, sendResponse) => {
     if (request.action === "updateRowsToShow") {
         rowsToShow = parseInt(request.rowsToShow, 10);
@@ -248,12 +241,45 @@ chrome.runtime.onMessage.addListener(async (request, sender, sendResponse) => {
         await fetchAndInjectPlaylistIfNeeded(currentPlaylistId);
     } else if (request.action === "userAuthenticated") {
         isAuthenticated = true;
-        if (request.playlistId) {
+        console.log("User authenticated, injecting playlist...");
+        if (request.playlistId && isOnHomepage()) {
             currentPlaylistId = request.playlistId;
             await fetchAndInjectPlaylistIfNeeded(currentPlaylistId);
         }
+    } else if (request.action === "authenticationSuccess") {
+        isAuthenticated = true;
+        
+    } else if (request.action === "refreshHomepage") {
+        await chrome.storage.sync.get(["rowsToShow", "itemsPerRow", "selectedPlaylistId", "playlistId"], async (data) => {
+            if (data.rowsToShow) {
+                // Set the number of rows to show based on the stored setting
+                rowsToShow = parseInt(data.rowsToShow, 10);
+            }
+            if (data.itemsPerRow) {
+                itemsPerRow = parseInt(data.itemsPerRow, 10);
+            }
+        });
+        // Re-inject the playlist when the homepage is refreshed
+        console.log("Refreshing homepage message received, injecting playlist...");
+        if (isOnHomepage() && currentPlaylistId && isAuthenticated) {
+            await fetchAndInjectPlaylistIfNeeded(currentPlaylistId);
+        } else {
+            // **Important:** Re-check authentication on refresh if needed
+            console.log("Rechecking Authentication");
+            chrome.runtime.sendMessage({ action: "checkAuthStatus" }, (response) => {
+                isAuthenticated = response.isAuthenticated;
+                currentPlaylistId = response.playlistId;
+                console.log("rowsToShow:", rowsToShow);
+                console.log("Authentication status on refresh:", isAuthenticated);
+                if (isAuthenticated && isOnHomepage() && currentPlaylistId) {
+                    fetchAndInjectPlaylistIfNeeded(currentPlaylistId);
+                }
+            });
+        }
+
     }
 });
+
 
 // Listen for URL changes (though MutationObserver is more reliable for SPA)
 window.addEventListener('popstate', () => {

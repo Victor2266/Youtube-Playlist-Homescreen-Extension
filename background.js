@@ -90,6 +90,9 @@ async function fetchUserPlaylists() {
         return;
     }
     console.log("Token in fetchUserPlaylists:", userToken);
+    chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
+        chrome.tabs.sendMessage(tabs[0].id, { action: "refreshHomepage" });
+    });
 
     try {
         // Fetch user's playlists
@@ -271,7 +274,10 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         return true;
     }
      if (request.action === "checkAuthStatus") {
-        sendResponse({ isAuthenticated: !!userToken }); // Send true if userToken exists, false otherwise
+        sendResponse({
+            isAuthenticated: !!userToken,
+            playlistId: selectedPlaylistId || "WL",
+        }); // Send true if userToken exists, false otherwise
     } else if (request.action === "getPlaylistId") {
         sendResponse({ playlistId: selectedPlaylistId || "WL" });
     }
@@ -293,5 +299,15 @@ chrome.storage.onChanged.addListener((changes, area) => {
                 rowsToShow: changes.rowsToShow.newValue,
             });
         });
+    }
+});
+
+// Listen for tab updates
+chrome.tabs.onUpdated.addListener(function (tabId, changeInfo, tab) {
+    console.log("Change info:", changeInfo.status, "Tab URL:", tab.url);
+    if (changeInfo.status === 'complete' && tab.url === 'https://www.youtube.com/') {
+        // Send a message to content.js to re-inject the playlist
+        console.log("Sending Refreshing homepage msg...");
+        chrome.tabs.sendMessage(tabId, { action: "refreshHomepage" });
     }
 });
