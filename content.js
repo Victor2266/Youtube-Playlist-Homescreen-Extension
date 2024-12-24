@@ -18,13 +18,14 @@ function isOnHomepage() {
 function removePlaylist() {
     const existingContainer = document.getElementById(playlistContainerId);
     if (existingContainer) {
+        console.log("ACTUALLY Removing playlist...");
         existingContainer.remove();
     }
 }
 
 // Function to fetch and inject the playlist (only if on the homepage)
 async function fetchAndInjectPlaylistIfNeeded(playlistId) {
-    console.log("fetchAndInjectPlaylistIfNeeded...");
+    //console.log("fetchAndInjectPlaylistIfNeeded...");
     //console.log("isOnHomepage():", isOnHomepage());
     if (isOnHomepage()) {
         await fetchAndInjectPlaylist(playlistId);
@@ -66,7 +67,7 @@ function formatDuration(isoDuration) {
 
 // Function to fetch and inject the playlist
 async function fetchAndInjectPlaylist(playlistId) {
-    console.log("fetchAndInjectPlaylist...");
+    //console.log("fetchAndInjectPlaylist...");
     getStoredSettings().then(() => {
         if (!playlistId) {
             console.error("Playlist ID not available");
@@ -76,7 +77,7 @@ async function fetchAndInjectPlaylist(playlistId) {
             console.log("User not logged in yet.");
             return;
         }
-        console.log("fetchAndInjectPlaylist...2");
+        //console.log("fetchAndInjectPlaylist...2");
         chrome.runtime.sendMessage(
             { action: "getPlaylistData", playlistId: playlistId },
             async (response) => {
@@ -101,7 +102,7 @@ async function fetchAndInjectPlaylist(playlistId) {
 
 // Function to create and inject the playlist section
 function injectPlaylist(playlistItems, playlistId, title, videoDurations) {
-    console.log("Playlist injecting.");
+    //console.log("Playlist injecting.");
     playlistTitle = title;
 
     const playlistContainer = document.createElement("div");
@@ -202,7 +203,7 @@ const observer = new MutationObserver((mutations) => {
         //console.log("playlistContainerId: ", playlistContainerId);
         //console.log("currentPlaylistId: ", currentPlaylistId);
     } else {
-        console.log("Not on the homepage, removing playlist...");
+        //console.log("Not on the homepage, removing playlist...");
         removePlaylist();
     }
 });
@@ -278,9 +279,9 @@ chrome.runtime.onMessage.addListener(async (request, sender, sendResponse) => {
             }
         })
         // Re-inject the playlist when the homepage is refreshed
-        console.log("Refreshing homepage message received, injecting playlist...");
+        //console.log("Refreshing homepage message received, injecting playlist...");
 
-        console.log("rowsToShow:", rowsToShow);
-        console.log("itemsPerRow:", itemsPerRow);
+        //console.log("rowsToShow:", rowsToShow);
+        //console.log("itemsPerRow:", itemsPerRow);
     }
 });
