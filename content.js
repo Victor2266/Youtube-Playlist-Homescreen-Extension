@@ -8,9 +8,12 @@ let currentPlaylistId = "";
 let initialLoad = true;
 
 // Get initial settings from storage
-chrome.storage.sync.get(["rowsToShow", "selectedPlaylistId", "playlistId"], (data) => {
+chrome.storage.sync.get(["rowsToShow", "itemsPerRow", "selectedPlaylistId", "playlistId"], (data) => {
     if (data.rowsToShow) {
         rowsToShow = data.rowsToShow;
+    }
+    if(data.itemsPerRow){
+        itemsPerRow = data.itemsPerRow;
     }
     if (data.selectedPlaylistId) {
         currentPlaylistId = data.selectedPlaylistId;
@@ -151,6 +154,9 @@ chrome.runtime.sendMessage({ action: "checkAuthStatus" }, (response) => {
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.action === "updateRowsToShow") {
         rowsToShow = request.rowsToShow;
+        fetchAndInjectPlaylist(currentPlaylistId);
+    } else if (request.action === "updateItemsPerRow") {
+        itemsPerRow = request.itemsPerRow;
         fetchAndInjectPlaylist(currentPlaylistId);
     } else if (request.action === "updatePlaylist") {
         fetchAndInjectPlaylist(request.playlistId);
