@@ -10,7 +10,7 @@ document.addEventListener("DOMContentLoaded", () => {
     chrome.storage.sync.get(["rowsToShow", "itemsPerRow", "maxItemsToShow"], (data) => {
         rowsSelect.value = data.rowsToShow || "1"; // Default to 1
         itemsPerRowSelect.value = data.itemsPerRow || "7"; // Default to 7
-        maxItemsSelect.value = data.maxItemsToShow || "50"; // Default to 20
+        maxItemsSelect.value = data.maxItemsToShow || "30"; // Default to 30
 
         // Fetch and display playlists immediately after loading settings
         chrome.runtime.sendMessage({ action: "getPlaylists" }, (response) => {
