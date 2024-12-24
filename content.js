@@ -115,9 +115,11 @@ function injectPlaylist(playlistItems, playlistId, title, videoDurations) {
 
     const videoGrid = document.createElement("div");
     videoGrid.className = "video-grid";
+    // Dynamically set grid columns
+    videoGrid.style.gridTemplateColumns = `repeat(${itemsPerRow}, minmax(0, 1fr))`; // Adjust minmax as needed
     playlistContainer.appendChild(videoGrid);
 
-    playlistItems.forEach((item, index) => {
+    playlistItems.slice(0, rowsToShow * itemsPerRow).forEach((item, index) => { // Only render the initially visible items
         const video = item.snippet;
         if (video && video.thumbnails && video.thumbnails.medium) {
             const videoId = video.resourceId.videoId;
@@ -136,10 +138,6 @@ function injectPlaylist(playlistItems, playlistId, title, videoDurations) {
                     <p class="channel-title">${video.videoOwnerChannelTitle}</p>
                 </a>
             `;
-
-            if (index >= rowsToShow * itemsPerRow) {
-                videoItem.style.display = "none";
-            }
 
             videoGrid.appendChild(videoItem);
         } else {
@@ -199,10 +197,10 @@ observer.observe(document.body, { subtree: true, childList: true });
 // Get initial settings from storage and inject if on homepage
 chrome.storage.sync.get(["rowsToShow", "itemsPerRow", "selectedPlaylistId", "playlistId"], async (data) => {
     if (data.rowsToShow) {
-        rowsToShow = data.rowsToShow;
+        rowsToShow = parseInt(data.rowsToShow, 10); // Ensure it's a number
     }
     if (data.itemsPerRow) {
-        itemsPerRow = data.itemsPerRow;
+        itemsPerRow = parseInt(data.itemsPerRow, 10); // Ensure it's a number
     }
     if (data.selectedPlaylistId) {
         currentPlaylistId = data.selectedPlaylistId;
@@ -240,10 +238,10 @@ chrome.runtime.sendMessage({ action: "checkAuthStatus" }, async (response) => {
 // Listen for messages from the background script
 chrome.runtime.onMessage.addListener(async (request, sender, sendResponse) => {
     if (request.action === "updateRowsToShow") {
-        rowsToShow = request.rowsToShow;
+        rowsToShow = parseInt(request.rowsToShow, 10);
         await fetchAndInjectPlaylistIfNeeded(currentPlaylistId);
     } else if (request.action === "updateItemsPerRow") {
-        itemsPerRow = request.itemsPerRow;
+        itemsPerRow = parseInt(request.itemsPerRow, 10);
         await fetchAndInjectPlaylistIfNeeded(currentPlaylistId);
     } else if (request.action === "updatePlaylist") {
         currentPlaylistId = request.playlistId;
