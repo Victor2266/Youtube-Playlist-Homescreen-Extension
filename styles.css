@@ -8,8 +8,8 @@
     margin-top: var(--ytd-masthead-height, 56px);
     /* Default margin for collapsed sidebar */
     margin-left: var(--ytd-mini-guide-width, 72px);
-    /* Adjust for sidebar transitions */
-    transition: margin-left 0.2s;
+    /* Adjust for sidebar transitions
+    transition: margin-left 0.2s; */
 }
 
 /* Adjust margin when sidebar is expanded */

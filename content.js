@@ -61,6 +61,14 @@ function injectPlaylist(playlistItems, playlistId, title) {
     heading.textContent = playlistTitle;
     playlistContainer.appendChild(heading);
 
+    if (playlistId === "WL") {
+        const warning = document.createElement("p");
+        warning.style.color = "red";
+        warning.style.fontWeight = "bold";
+        warning.textContent = "Warning: The Watch Later playlist is not available because YouTube removed it from their API.";
+        playlistContainer.appendChild(warning);
+    }
+
     const videoGrid = document.createElement("div");
     videoGrid.className = "video-grid";
     playlistContainer.appendChild(videoGrid);
