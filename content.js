@@ -11,26 +11,26 @@ chrome.storage.sync.get(["rowsToShow", "selectedPlaylistId", "playlistId"], (dat
     if (data.rowsToShow) {
         rowsToShow = data.rowsToShow;
     }
-      if (data.selectedPlaylistId) {
-            currentPlaylistId = data.selectedPlaylistId;
-            fetchAndInjectPlaylist(currentPlaylistId);
-      } else if (data.playlistId) {
-          currentPlaylistId = data.playlistId;
-         fetchAndInjectPlaylist(currentPlaylistId);
-      }  else {
-       // In case playlistId is not available, particularly for the first-time users
-      chrome.runtime.sendMessage({ action: "getPlaylistId" }, (response) => {
-        if (response && response.playlistId) {
-          currentPlaylistId = response.playlistId;
-            fetchAndInjectPlaylist(currentPlaylistId);
-        }
-      });
+    if (data.selectedPlaylistId) {
+        currentPlaylistId = data.selectedPlaylistId;
+        fetchAndInjectPlaylist(currentPlaylistId);
+    } else if (data.playlistId) {
+        currentPlaylistId = data.playlistId;
+        fetchAndInjectPlaylist(currentPlaylistId);
+    } else {
+        // In case playlistId is not available, particularly for the first-time users
+        chrome.runtime.sendMessage({ action: "getPlaylistId" }, (response) => {
+            if (response && response.playlistId) {
+                currentPlaylistId = response.playlistId;
+                fetchAndInjectPlaylist(currentPlaylistId);
+            }
+        });
     }
 });
 
 // Function to fetch and inject the playlist
 function fetchAndInjectPlaylist(playlistId) {
-    if (!playlistId){
+    if (!playlistId) {
         console.error("Playlist ID not available");
         return;
     }
@@ -50,7 +50,7 @@ function fetchAndInjectPlaylist(playlistId) {
 // Function to create and inject the playlist section
 function injectPlaylist(playlistItems, playlistId) {
     // Extract playlist title from the first video
-   playlistTitle = playlistItems.length > 0 ? playlistItems[0].snippet.playlistId : "Playlist";
+    playlistTitle = playlistItems.length > 0 ? playlistItems[0].snippet.playlistId : "Playlist";
 
     const playlistContainer = document.createElement("div");
     playlistContainer.id = "watch-later-extension";
@@ -96,22 +96,28 @@ function injectPlaylist(playlistItems, playlistId) {
         }
     });
 
+    // Create button container
+    const buttonContainer = document.createElement("div");
+    buttonContainer.className = "button-container";
+
     // "Show More" button
     const showMoreButton = document.createElement("a");
     showMoreButton.className = "show-more-button";
     showMoreButton.href = `https://www.youtube.com/playlist?list=${playlistId}`;
     showMoreButton.textContent = "Open This Playlist";
-    showMoreButton.target = "_blank"; // Open in a new tab
-    playlistContainer.appendChild(showMoreButton);
+    showMoreButton.target = "_blank";
+    buttonContainer.appendChild(showMoreButton);
 
-        // "Show All Playlists" button
-        const showAllButton = document.createElement("a");
-        showAllButton.className = "show-more-button";
-        showAllButton.href = `https://www.youtube.com/feed/playlists`;
-        showAllButton.textContent = "Show All Playlists";
-        showAllButton.target = "_blank"; // Open in a new tab
-        playlistContainer.appendChild(showAllButton);
+    // "Show All Playlists" button
+    const showAllButton = document.createElement("a");
+    showAllButton.className = "show-more-button";
+    showAllButton.href = `https://www.youtube.com/feed/playlists`;
+    showAllButton.textContent = "Show All Playlists";
+    showAllButton.target = "_blank";
+    buttonContainer.appendChild(showAllButton);
 
+    // Add the button container to the playlist container
+    playlistContainer.appendChild(buttonContainer);
     // Remove any existing playlist container before adding a new one
     const existingContainer = document.getElementById("watch-later-extension");
     if (existingContainer) {
@@ -128,32 +134,32 @@ function injectPlaylist(playlistItems, playlistId) {
 }
 // Check authentication status on page load
 chrome.runtime.sendMessage({ action: "checkAuthStatus" }, (response) => {
-  if (response.isAuthenticated) {
-    // User is authenticated, get the playlist ID and fetch data
-      chrome.runtime.sendMessage({ action: "getPlaylistId" }, (response) => {
-         if(response && response.playlistId){
-           fetchAndInjectPlaylist(response.playlistId)
-         }
-       });
+    if (response.isAuthenticated) {
+        // User is authenticated, get the playlist ID and fetch data
+        chrome.runtime.sendMessage({ action: "getPlaylistId" }, (response) => {
+            if (response && response.playlistId) {
+                fetchAndInjectPlaylist(response.playlistId)
+            }
+        });
     } else {
-    // User is not authenticated. Do nothing or display a message on the page
-    console.log("User is not authenticated. Awaiting authentication.");
-  }
+        // User is not authenticated. Do nothing or display a message on the page
+        console.log("User is not authenticated. Awaiting authentication.");
+    }
 });
 
 
 // Listen for messages from the background script
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  if (request.action === "updateRowsToShow") {
-    rowsToShow = request.rowsToShow;
-      fetchAndInjectPlaylist(currentPlaylistId);
-  } else if (request.action === "updatePlaylist") {
-    fetchAndInjectPlaylist(request.playlistId);
-  } else if (request.action === "userAuthenticated") {
-    // User has been authenticated, fetch data now
-     if (request.playlistId) {
+    if (request.action === "updateRowsToShow") {
+        rowsToShow = request.rowsToShow;
+        fetchAndInjectPlaylist(currentPlaylistId);
+    } else if (request.action === "updatePlaylist") {
+        fetchAndInjectPlaylist(request.playlistId);
+    } else if (request.action === "userAuthenticated") {
+        // User has been authenticated, fetch data now
+        if (request.playlistId) {
             currentPlaylistId = request.playlistId;
-          fetchAndInjectPlaylist(currentPlaylistId);
+            fetchAndInjectPlaylist(currentPlaylistId);
+        }
     }
-  }
 });
