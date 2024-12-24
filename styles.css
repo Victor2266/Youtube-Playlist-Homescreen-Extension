@@ -57,14 +57,26 @@ ytd-app[guide-hidden] #watch-later-extension {
 
 .thumbnail-container {
     position: relative;
-    display: inline-block; /* Or block, depending on layout */
-}
-
-.video-item img {
-    width: 100%;
+    display: inline-block;
+    transition: transform 0.2s, box-shadow 0.2s;
     aspect-ratio: 16 / 9;
     border-radius: 12px;
+    overflow: hidden;
+    transform: scale(1);
+}
+
+.thumbnail-container:hover{
+    transform: scale(1.1);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2), 0 12px 16px rgba(0, 0, 0, 0.2);
+}
+.video-item img:hover {
+    transform: scale(1.1);
+}
+.video-item img {
+    width: 100%;
     background-color: var(--yt-spec-base-background, #272727);
+    transition: transform 0.5s;
+    transform: scale(1);
 }
 
 .video-duration {

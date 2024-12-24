@@ -7,6 +7,8 @@ let currentPlaylistId = "";
 let initialLoad = true;
 let playlistContainerId = "watch-later-extension"; // Unique ID for the container
 
+let isAuthenticated = false;
+
 // Helper function to check if we are on the YouTube homepage
 function isOnHomepage() {
     return window.location.pathname === "/";
@@ -66,6 +68,10 @@ async function fetchAndInjectPlaylist(playlistId) {
         console.error("Playlist ID not available");
         return;
     }
+    if (!isAuthenticated) {
+        console.log("User not logged in yet.");
+        return;
+    }
 
     chrome.runtime.sendMessage(
         { action: "getPlaylistData", playlistId: playlistId },
@@ -98,6 +104,14 @@ function injectPlaylist(playlistItems, playlistId, title, videoDurations) {
     heading.className = "playlist-title";
     heading.textContent = playlistTitle;
     playlistContainer.appendChild(heading);
+
+    if (playlistId === "WL") {
+        const warning = document.createElement("p");
+        warning.style.color = "red";
+        warning.style.fontWeight = "bold";
+        warning.textContent = "Warning: The Watch Later playlist is not available because YouTube removed it from their API. You have to follow a tutorial to transfer your watch later videos into a different playlist to see the videos here.";
+        playlistContainer.appendChild(warning);
+    }
 
     const videoGrid = document.createElement("div");
     videoGrid.className = "video-grid";
@@ -235,6 +249,7 @@ chrome.runtime.onMessage.addListener(async (request, sender, sendResponse) => {
         currentPlaylistId = request.playlistId;
         await fetchAndInjectPlaylistIfNeeded(currentPlaylistId);
     } else if (request.action === "userAuthenticated") {
+        isAuthenticated = true;
         if (request.playlistId) {
             currentPlaylistId = request.playlistId;
             await fetchAndInjectPlaylistIfNeeded(currentPlaylistId);

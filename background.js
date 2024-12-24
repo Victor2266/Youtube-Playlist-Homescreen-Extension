@@ -86,7 +86,7 @@ function getWatchLaterPlaylistId() {
 // Fetch user's playlists and watch later playlist (used in options page)
 async function fetchUserPlaylists() {
     if (!userToken) {
-        console.error("User not authenticated.");
+        console.log("User not authenticated.");
         return;
     }
     console.log("Token in fetchUserPlaylists:", userToken);
@@ -160,7 +160,7 @@ async function fetchUserPlaylists() {
 // Fetch playlist items
 async function fetchPlaylistItems(playlistId) {
   if (!userToken) {
-    console.error("User not authenticated.");
+    console.log("User not authenticated yet.");
     return;
   }
 
