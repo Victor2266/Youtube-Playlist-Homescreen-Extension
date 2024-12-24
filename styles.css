@@ -80,8 +80,17 @@ ytd-app[guide-hidden] #watch-later-extension {
     color: var(--yt-spec-text-secondary, #aaa);
 }
 
+/* New button container */
+.button-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin: 8px 0 24px;
+}
+
 .show-more-button {
-    display: inline-block;
+    display: block;
+    width: 100%;
     padding: 10px 16px;
     background-color: var(--yt-spec-raised-background, #272727);
     color: var(--yt-spec-text-primary, #fff);
@@ -89,7 +98,8 @@ ytd-app[guide-hidden] #watch-later-extension {
     text-decoration: none;
     font-size: 14px;
     font-weight: 500;
-    margin: 8px 0 24px;
+    text-align: center;
+    box-sizing: border-box;
     transition: background-color 0.2s;
 }
 
@@ -107,5 +117,10 @@ ytd-app[guide-hidden] #watch-later-extension {
 @media (max-width: 800px) {
     .video-grid {
         grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    }
+    
+    /* Stack buttons on smaller screens */
+    .button-container {
+        grid-template-columns: 1fr;
     }
 }

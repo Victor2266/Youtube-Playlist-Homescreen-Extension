@@ -1,10 +1,11 @@
+
 // content.js
 
 let rowsToShow = 3; // Default rows to show
+let itemsPerRow = 7;
 let playlistTitle = "";
 let currentPlaylistId = "";
 let initialLoad = true;
-
 
 // Get initial settings from storage
 chrome.storage.sync.get(["rowsToShow", "selectedPlaylistId", "playlistId"], (data) => {
@@ -36,10 +37,10 @@ function fetchAndInjectPlaylist(playlistId) {
     }
 
     chrome.runtime.sendMessage(
-        { action: "getPlaylistItems", playlistId: playlistId },
+        { action: "getPlaylistData", playlistId: playlistId },
         (response) => {
-            if (response.data) {
-                injectPlaylist(response.data, playlistId);
+            if (response && response.data && response.playlistTitle) {
+                injectPlaylist(response.data, playlistId, response.playlistTitle);
             } else {
                 console.error("Error fetching playlist data:", response.error);
             }
@@ -48,9 +49,8 @@ function fetchAndInjectPlaylist(playlistId) {
 }
 
 // Function to create and inject the playlist section
-function injectPlaylist(playlistItems, playlistId) {
-    // Extract playlist title from the first video
-    playlistTitle = playlistItems.length > 0 ? playlistItems[0].snippet.playlistId : "Playlist";
+function injectPlaylist(playlistItems, playlistId, title) {
+    playlistTitle = title;
 
     const playlistContainer = document.createElement("div");
     playlistContainer.id = "watch-later-extension";
@@ -85,7 +85,7 @@ function injectPlaylist(playlistItems, playlistId) {
 
             console.log("Video item created:", videoItem);
 
-            if (index >= rowsToShow * 7) {
+            if (index >= rowsToShow * itemsPerRow) {
                 videoItem.style.display = "none";
             }
 
@@ -146,7 +146,6 @@ chrome.runtime.sendMessage({ action: "checkAuthStatus" }, (response) => {
         console.log("User is not authenticated. Awaiting authentication.");
     }
 });
-
 
 // Listen for messages from the background script
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {

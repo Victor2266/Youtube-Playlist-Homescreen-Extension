@@ -5,7 +5,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const playlistsContainer = document.getElementById('playlists-container');
     const playlistSelect = document.getElementById('playlist-select');
     const updatePlaylistButton = document.getElementById('update-playlist');
-    const seeAllPlaylistsButton = document.getElementById('see-all-playlists');
+    const seeOptionsButton = document.getElementById('see-options');
 
     authButton.addEventListener('click', () => {
         chrome.runtime.sendMessage({ action: "authenticate" });
@@ -33,7 +33,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // Handle "See All Playlists" button click
-    seeAllPlaylistsButton.addEventListener('click', () => {
+    seeOptionsButton.addEventListener('click', () => {
         chrome.runtime.openOptionsPage();
     });
 

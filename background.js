@@ -1,9 +1,11 @@
+
 // background.js
 
 let userToken = null;
 let selectedPlaylistId = null; // User-selected playlist ID
 let watchLaterPlaylistId = "WL";
 let watchLaterItems = [];
+let playlistTitles = {}; // To store playlist titles
 
 // Load any previously saved settings
 chrome.storage.sync.get(["selectedPlaylistId", "rowsToShow", "playlistId"], (data) => {
@@ -107,6 +109,12 @@ async function fetchUserPlaylists() {
         const playlistsData = await playlistsResponse.json();
         let playlists = playlistsData.items || [];
 
+        // Store playlist titles
+        playlists.forEach(playlist => {
+            playlistTitles[playlist.id] = playlist.snippet.title;
+        });
+        playlistTitles['WL'] = 'Watch Later'; // Add Watch Later title
+
         // Fetch "Watch Later" playlist items
         const watchLaterResponse = await fetch(
             `https://www.googleapis.com/youtube/v3/playlistItems?part=snippet,contentDetails&playlistId=WL&maxResults=50`,
@@ -157,7 +165,6 @@ async function fetchPlaylistItems(playlistId) {
 
     console.log("Token in fetchPlaylistItems:", userToken);
     console.log("Fetching items for playlistId:", playlistId);
-
 
   const response = await fetch(
     `https://www.googleapis.com/youtube/v3/playlistItems?part=snippet,contentDetails&playlistId=${playlistId}&maxResults=50`,
@@ -220,6 +227,15 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         sendResponse({ status: "Playlist ID updated" });
     }  else if (request.action === "getPlaylistId") {
       sendResponse({ playlistId: selectedPlaylistId || "WL" });
+    } else if (request.action === "getPlaylistData") {
+        const playlistId = request.playlistId;
+        fetchPlaylistItems(playlistId)
+            .then(items => {
+                const title = playlistTitles[playlistId] || "Playlist";
+                sendResponse({ data: items, playlistTitle: title });
+            })
+            .catch(error => sendResponse({ error: error.message }));
+        return true;
     }
      if (request.action === "checkAuthStatus") {
         sendResponse({ isAuthenticated: !!userToken }); // Send true if userToken exists, false otherwise
