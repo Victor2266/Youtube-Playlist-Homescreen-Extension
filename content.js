@@ -262,6 +262,10 @@ chrome.runtime.onMessage.addListener(async (request, sender, sendResponse) => {
         });
         // Re-inject the playlist when the homepage is refreshed
         console.log("Refreshing homepage message received, injecting playlist...");
+        
+        console.log("rowsToShow:", rowsToShow);
+        console.log("itemsPerRow:", itemsPerRow);
+        
         if (isOnHomepage() && currentPlaylistId && isAuthenticated) {
             await fetchAndInjectPlaylistIfNeeded(currentPlaylistId);
         } else {
@@ -269,7 +273,6 @@ chrome.runtime.onMessage.addListener(async (request, sender, sendResponse) => {
             console.log("Rechecking Authentication");
             chrome.runtime.sendMessage({ action: "checkAuthStatus" }, (response) => {
                 isAuthenticated = response.isAuthenticated;
-                console.log("rowsToShow:", rowsToShow);
                 console.log("Authentication status on refresh:", isAuthenticated);
                 if (isAuthenticated && isOnHomepage() && currentPlaylistId) {
                     fetchAndInjectPlaylistIfNeeded(currentPlaylistId);
