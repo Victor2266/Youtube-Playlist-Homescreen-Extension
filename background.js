@@ -201,6 +201,38 @@ function notifyContentScript() {
     });
 }
 
+// Function to fetch video details (including duration)
+async function fetchVideoDetails(videoIds) {
+    if (!userToken) {
+        console.error("User not authenticated.");
+        return {};
+    }
+
+    const idsParam = videoIds.join(',');
+    const response = await fetch(
+        `https://www.googleapis.com/youtube/v3/videos?part=contentDetails&id=${idsParam}`,
+        {
+            headers: {
+                Authorization: `Bearer ${userToken}`,
+            },
+        }
+    );
+
+    if (!response.ok) {
+        console.error("Error fetching video details:", response.status);
+        return {};
+    }
+
+    const data = await response.json();
+    const durations = {};
+    if (data.items) {
+        data.items.forEach(item => {
+            durations[item.id] = item.contentDetails.duration;
+        });
+    }
+    return durations;
+}
+
 // Message listener for communication with content and popup scripts
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.action === "authenticate") {
@@ -242,6 +274,12 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         sendResponse({ isAuthenticated: !!userToken }); // Send true if userToken exists, false otherwise
     } else if (request.action === "getPlaylistId") {
         sendResponse({ playlistId: selectedPlaylistId || "WL" });
+    }
+    if (request.action === "getVideoDurations") {
+        fetchVideoDetails(request.videoIds)
+            .then(durations => sendResponse({ durations: durations }))
+            .catch(error => sendResponse({ error: error.message }));
+        return true; // Keep the channel open
     }
 });
 

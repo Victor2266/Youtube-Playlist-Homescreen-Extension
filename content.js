@@ -21,16 +21,47 @@ function removePlaylist() {
 }
 
 // Function to fetch and inject the playlist (only if on the homepage)
-function fetchAndInjectPlaylistIfNeeded(playlistId) {
+async function fetchAndInjectPlaylistIfNeeded(playlistId) {
     if (isOnHomepage()) {
-        fetchAndInjectPlaylist(playlistId);
+        await fetchAndInjectPlaylist(playlistId);
     } else {
         removePlaylist(); // Ensure it's removed if we're not on the homepage
     }
 }
 
+// Function to fetch video durations
+async function fetchVideoDurations(videoIds) {
+    return new Promise((resolve, reject) => {
+        chrome.runtime.sendMessage(
+            { action: "getVideoDurations", videoIds: videoIds },
+            (response) => {
+                if (response && response.durations) {
+                    resolve(response.durations);
+                } else {
+                    reject(response ? response.error : "Error fetching video durations");
+                }
+            }
+        );
+    });
+}
+
+// Function to format duration from ISO 8601 to MM:SS
+function formatDuration(isoDuration) {
+    const match = isoDuration.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/);
+    if (match) {
+        const hours = parseInt(match[1]) || 0;
+        const minutes = parseInt(match[2]) || 0;
+        const seconds = parseInt(match[3]) || 0;
+        const totalSeconds = hours * 3600 + minutes * 60 + seconds;
+        const m = String(Math.floor(totalSeconds / 60)).padStart(2, '0');
+        const s = String(totalSeconds % 60).padStart(2, '0');
+        return `${m}:${s}`;
+    }
+    return null;
+}
+
 // Function to fetch and inject the playlist
-function fetchAndInjectPlaylist(playlistId) {
+async function fetchAndInjectPlaylist(playlistId) {
     if (!playlistId) {
         console.error("Playlist ID not available");
         return;
@@ -38,9 +69,16 @@ function fetchAndInjectPlaylist(playlistId) {
 
     chrome.runtime.sendMessage(
         { action: "getPlaylistData", playlistId: playlistId },
-        (response) => {
+        async (response) => {
             if (response && response.data && response.playlistTitle) {
-                injectPlaylist(response.data, playlistId, response.playlistTitle);
+                const videoIds = response.data.map(item => item.snippet.resourceId.videoId);
+                try {
+                    const durations = await fetchVideoDurations(videoIds);
+                    injectPlaylist(response.data, playlistId, response.playlistTitle, durations);
+                } catch (error) {
+                    console.error("Error fetching video durations:", error);
+                    injectPlaylist(response.data, playlistId, response.playlistTitle, {}); // Inject without durations
+                }
             } else {
                 console.error("Error fetching playlist data:", response.error);
             }
@@ -49,7 +87,7 @@ function fetchAndInjectPlaylist(playlistId) {
 }
 
 // Function to create and inject the playlist section
-function injectPlaylist(playlistItems, playlistId, title) {
+function injectPlaylist(playlistItems, playlistId, title, videoDurations) {
     playlistTitle = title;
 
     const playlistContainer = document.createElement("div");
@@ -61,14 +99,6 @@ function injectPlaylist(playlistItems, playlistId, title) {
     heading.textContent = playlistTitle;
     playlistContainer.appendChild(heading);
 
-    if (playlistId === "WL") {
-        const warning = document.createElement("p");
-        warning.style.color = "red";
-        warning.style.fontWeight = "bold";
-        warning.textContent = "Warning: The Watch Later playlist is not available because YouTube removed it from their API.";
-        playlistContainer.appendChild(warning);
-    }
-
     const videoGrid = document.createElement("div");
     videoGrid.className = "video-grid";
     playlistContainer.appendChild(videoGrid);
@@ -76,11 +106,18 @@ function injectPlaylist(playlistItems, playlistId, title) {
     playlistItems.forEach((item, index) => {
         const video = item.snippet;
         if (video && video.thumbnails && video.thumbnails.medium) {
+            const videoId = video.resourceId.videoId;
+            const duration = videoDurations[videoId];
+            const formattedDuration = duration ? formatDuration(duration) : null;
+
             const videoItem = document.createElement("div");
             videoItem.className = "video-item";
             videoItem.innerHTML = `
-                <a href="https://www.youtube.com/watch?v=${video.resourceId.videoId}&list=${playlistId}">
-                    <img src="${video.thumbnails.medium.url}" alt="${video.title}">
+                <a href="https://www.youtube.com/watch?v=${videoId}&list=${playlistId}">
+                    <div class="thumbnail-container">
+                        <img src="${video.thumbnails.medium.url}" alt="${video.title}">
+                        ${formattedDuration ? `<span class="video-duration">${formattedDuration}</span>` : ''}
+                    </div>
                     <h3 class="video-title">${video.title}</h3>
                     <p class="channel-title">${video.videoOwnerChannelTitle}</p>
                 </a>
@@ -146,7 +183,7 @@ const observer = new MutationObserver((mutations) => {
 observer.observe(document.body, { subtree: true, childList: true });
 
 // Get initial settings from storage and inject if on homepage
-chrome.storage.sync.get(["rowsToShow", "itemsPerRow", "selectedPlaylistId", "playlistId"], (data) => {
+chrome.storage.sync.get(["rowsToShow", "itemsPerRow", "selectedPlaylistId", "playlistId"], async (data) => {
     if (data.rowsToShow) {
         rowsToShow = data.rowsToShow;
     }
@@ -160,25 +197,25 @@ chrome.storage.sync.get(["rowsToShow", "itemsPerRow", "selectedPlaylistId", "pla
     }
 
     if (currentPlaylistId) {
-        fetchAndInjectPlaylistIfNeeded(currentPlaylistId);
+        await fetchAndInjectPlaylistIfNeeded(currentPlaylistId);
     } else {
         // In case playlistId is not available, particularly for the first-time users
-        chrome.runtime.sendMessage({ action: "getPlaylistId" }, (response) => {
+        chrome.runtime.sendMessage({ action: "getPlaylistId" }, async (response) => {
             if (response && response.playlistId) {
                 currentPlaylistId = response.playlistId;
-                fetchAndInjectPlaylistIfNeeded(currentPlaylistId);
+                await fetchAndInjectPlaylistIfNeeded(currentPlaylistId);
             }
         });
     }
 });
 
 // Check authentication status on page load
-chrome.runtime.sendMessage({ action: "checkAuthStatus" }, (response) => {
+chrome.runtime.sendMessage({ action: "checkAuthStatus" }, async (response) => {
     if (response.isAuthenticated) {
-        chrome.runtime.sendMessage({ action: "getPlaylistId" }, (response) => {
+        chrome.runtime.sendMessage({ action: "getPlaylistId" }, async (response) => {
             if (response && response.playlistId) {
                 currentPlaylistId = response.playlistId;
-                fetchAndInjectPlaylistIfNeeded(currentPlaylistId);
+                await fetchAndInjectPlaylistIfNeeded(currentPlaylistId);
             }
         });
     } else {
@@ -187,20 +224,20 @@ chrome.runtime.sendMessage({ action: "checkAuthStatus" }, (response) => {
 });
 
 // Listen for messages from the background script
-chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+chrome.runtime.onMessage.addListener(async (request, sender, sendResponse) => {
     if (request.action === "updateRowsToShow") {
         rowsToShow = request.rowsToShow;
-        fetchAndInjectPlaylistIfNeeded(currentPlaylistId);
+        await fetchAndInjectPlaylistIfNeeded(currentPlaylistId);
     } else if (request.action === "updateItemsPerRow") {
         itemsPerRow = request.itemsPerRow;
-        fetchAndInjectPlaylistIfNeeded(currentPlaylistId);
+        await fetchAndInjectPlaylistIfNeeded(currentPlaylistId);
     } else if (request.action === "updatePlaylist") {
         currentPlaylistId = request.playlistId;
-        fetchAndInjectPlaylistIfNeeded(currentPlaylistId);
+        await fetchAndInjectPlaylistIfNeeded(currentPlaylistId);
     } else if (request.action === "userAuthenticated") {
         if (request.playlistId) {
             currentPlaylistId = request.playlistId;
-            fetchAndInjectPlaylistIfNeeded(currentPlaylistId);
+            await fetchAndInjectPlaylistIfNeeded(currentPlaylistId);
         }
     }
 });

@@ -55,11 +55,28 @@ ytd-app[guide-hidden] #watch-later-extension {
     display: block;
 }
 
+.thumbnail-container {
+    position: relative;
+    display: inline-block; /* Or block, depending on layout */
+}
+
 .video-item img {
     width: 100%;
     aspect-ratio: 16 / 9;
     border-radius: 12px;
     background-color: var(--yt-spec-base-background, #272727);
+}
+
+.video-duration {
+    position: absolute;
+    bottom: 8px;
+    right: 8px;
+    background-color: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 2px 4px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 500;
 }
 
 .video-info {
