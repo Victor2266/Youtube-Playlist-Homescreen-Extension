@@ -1,0 +1,111 @@
+/* styles.css */
+#watch-later-extension {
+    /* Match YouTube's content spacing */
+    padding: 24px 24px 0;
+    width: auto;
+    box-sizing: border-box;
+    /* Add space for the fixed header */
+    margin-top: var(--ytd-masthead-height, 56px);
+    /* Default margin for collapsed sidebar */
+    margin-left: var(--ytd-mini-guide-width, 72px);
+    /* Adjust for sidebar transitions */
+    transition: margin-left 0.2s;
+}
+
+/* Adjust margin when sidebar is expanded */
+[guide-persistent-and-visible] #watch-later-extension {
+    margin-left: var(--ytd-guide-persistent-width, 240px);
+}
+
+/* Remove margin when sidebar is hidden completely */
+ytd-app[guide-hidden] #watch-later-extension {
+    margin-left: 0;
+}
+
+.playlist-title {
+    font-family: "YouTube Sans", "Roboto", sans-serif;
+    font-size: 20px;
+    font-weight: 500;
+    line-height: 2.8rem;
+    margin: 0 0 24px;
+    color: var(--yt-spec-text-primary, #fff);
+}
+
+.video-grid {
+    display: grid;
+    /* Use YouTube's responsive grid layout */
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.video-item {
+    position: relative;
+    cursor: pointer;
+}
+
+.video-item a {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+}
+
+.video-item img {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    border-radius: 12px;
+    background-color: var(--yt-spec-base-background, #272727);
+}
+
+.video-info {
+    padding: 12px 0;
+}
+
+.video-title {
+    font-family: "Roboto", sans-serif;
+    font-size: 16px;
+    font-weight: 500;
+    line-height: 22px;
+    margin: 12px 0 4px;
+    color: var(--yt-spec-text-primary, #fff);
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+}
+
+.channel-title {
+    font-size: 14px;
+    line-height: 20px;
+    color: var(--yt-spec-text-secondary, #aaa);
+}
+
+.show-more-button {
+    display: inline-block;
+    padding: 10px 16px;
+    background-color: var(--yt-spec-raised-background, #272727);
+    color: var(--yt-spec-text-primary, #fff);
+    border-radius: 18px;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    margin: 8px 0 24px;
+    transition: background-color 0.2s;
+}
+
+.show-more-button:hover {
+    background-color: var(--yt-spec-raised-background-hover, #3f3f3f);
+}
+
+/* Responsive adjustments */
+@media (max-width: 1200px) {
+    .video-grid {
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    }
+}
+
+@media (max-width: 800px) {
+    .video-grid {
+        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    }
+}

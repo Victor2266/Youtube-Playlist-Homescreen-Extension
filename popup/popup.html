@@ -1,0 +1,29 @@
+<!-- popup/popup.html -->
+
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>YouTube Watch Later Popup</title>
+    <link rel="stylesheet" href="popup.css">
+</head>
+
+<body>
+    <div id="auth-container">
+        <p>Please authenticate to access your YouTube playlists.</p>
+        <button id="auth-button">Authenticate</button>
+    </div>
+    <div id="playlists-container" style="display: none;">
+        
+        <button id="see-all-playlists">See All Playlists</button>
+        <h3>Select Playlist</h3>
+        <select id="playlist-select">
+            <!-- Options will be added here -->
+        </select>
+        <button id="update-playlist">Use This Playlist</button>
+    </div>
+
+    <script src="popup.js"></script>
+</body>
+
+</html>
