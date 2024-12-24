@@ -183,7 +183,7 @@ async function fetchPlaylistItems(playlistId) {
     return;
   }
   const data = await response.json();
-  console.log("Raw API response (data):", data);
+  //console.log("Raw API response (data):", data);
 
   if (data && data.items) {
     return data.items;
