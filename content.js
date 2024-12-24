@@ -154,7 +154,6 @@ function injectPlaylist(playlistItems, playlistId, title, videoDurations) {
     showMoreButton.className = "show-more-button";
     showMoreButton.href = `https://www.youtube.com/playlist?list=${playlistId}`;
     showMoreButton.textContent = "Open Playlist";
-    showMoreButton.target = "_blank";
     buttonContainer.appendChild(showMoreButton);
 
     // "Show All Playlists" button
@@ -162,7 +161,6 @@ function injectPlaylist(playlistItems, playlistId, title, videoDurations) {
     showAllButton.className = "show-more-button";
     showAllButton.href = `https://www.youtube.com/feed/playlists`;
     showAllButton.textContent = "Show All Playlists";
-    showAllButton.target = "_blank";
     buttonContainer.appendChild(showAllButton);
 
     // Add the button container to the playlist container
@@ -187,6 +185,7 @@ const observer = new MutationObserver((mutations) => {
             fetchAndInjectPlaylistIfNeeded(currentPlaylistId); // Re-inject if it's gone
         }
     } else {
+        console.log("Not on the homepage, removing playlist...");
         removePlaylist();
     }
 });
