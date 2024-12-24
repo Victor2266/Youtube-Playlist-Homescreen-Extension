@@ -96,7 +96,7 @@ async function fetchAndInjectPlaylist(playlistId) {
         );
     })
 
-    
+
 }
 
 // Function to create and inject the playlist section
@@ -195,7 +195,7 @@ const observer = new MutationObserver((mutations) => {
             }
         });
 
-        if (!document.getElementById(playlistContainerId) && currentPlaylistId) { 
+        if (!document.getElementById(playlistContainerId) && currentPlaylistId) {
             fetchAndInjectPlaylistIfNeeded(currentPlaylistId); // Re-inject if it's gone
         }
         //console.log("!document.getElementById(playlistContainerId): ", !document.getElementById(playlistContainerId));
@@ -216,16 +216,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
     getStoredSettings().then(() => {
         // Check authentication and then inject
-            if (isAuthenticated && isOnHomepage() && currentPlaylistId) {
-                console.log("Injecting playlist after DOMContentLoaded");
-                fetchAndInjectPlaylistIfNeeded(currentPlaylistId);
-            } else if (!isAuthenticated) {
-                console.log("User not authenticated on DOMContentLoaded.");
-            } else if (!isOnHomepage()) {
-                console.log("Not on homepage on DOMContentLoaded.");
-            }
-        });
-    }
+        if (isAuthenticated && isOnHomepage() && currentPlaylistId) {
+            console.log("Injecting playlist after DOMContentLoaded");
+            fetchAndInjectPlaylistIfNeeded(currentPlaylistId);
+        } else if (!isAuthenticated) {
+            console.log("User not authenticated on DOMContentLoaded.");
+        } else if (!isOnHomepage()) {
+            console.log("Not on homepage on DOMContentLoaded.");
+        }
+    });
+}
 );
 
 async function getStoredSettings() {
@@ -270,7 +270,7 @@ chrome.runtime.onMessage.addListener(async (request, sender, sendResponse) => {
         }
     } else if (request.action === "authenticationSuccess") {
         isAuthenticated = true;
-        
+
     } else if (request.action === "refreshHomepage") {
         getStoredSettings().then(() => {
             if (isAuthenticated && isOnHomepage() && currentPlaylistId) {
@@ -279,7 +279,7 @@ chrome.runtime.onMessage.addListener(async (request, sender, sendResponse) => {
         })
         // Re-inject the playlist when the homepage is refreshed
         console.log("Refreshing homepage message received, injecting playlist...");
-        
+
         console.log("rowsToShow:", rowsToShow);
         console.log("itemsPerRow:", itemsPerRow);
     }
