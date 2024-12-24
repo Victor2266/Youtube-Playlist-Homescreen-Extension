@@ -3,12 +3,14 @@
 document.addEventListener("DOMContentLoaded", () => {
     const rowsSelect = document.getElementById("rows-select");
     const itemsPerRowSelect = document.getElementById("items-per-row-select");
+    const maxItemsSelect = document.getElementById("max-items-select");
     const playlistsList = document.getElementById("playlists-list");
 
     // Load current settings
-    chrome.storage.sync.get(["rowsToShow", "itemsPerRow"], (data) => {
+    chrome.storage.sync.get(["rowsToShow", "itemsPerRow", "maxItemsToShow"], (data) => {
         rowsSelect.value = data.rowsToShow || "1"; // Default to 1
         itemsPerRowSelect.value = data.itemsPerRow || "7"; // Default to 7
+        maxItemsSelect.value = data.maxItemsToShow || "50"; // Default to 20
 
         // Fetch and display playlists immediately after loading settings
         chrome.runtime.sendMessage({ action: "getPlaylists" }, (response) => {
@@ -28,6 +30,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
     itemsPerRowSelect.addEventListener("change", () => {
         chrome.storage.sync.set({ itemsPerRow: itemsPerRowSelect.value });
+    });
+
+    maxItemsSelect.addEventListener("change", () => {
+        chrome.storage.sync.set({ maxItemsToShow: maxItemsSelect.value });
     });
 
     function displayPlaylists(playlists) {

@@ -6,14 +6,18 @@ let selectedPlaylistId = null; // User-selected playlist ID
 let watchLaterPlaylistId = "WL";
 let watchLaterItems = [];
 let playlistTitles = {}; // To store playlist titles
+let maxItemsToShow = 50;
 
 // Load any previously saved settings
-chrome.storage.sync.get(["selectedPlaylistId", "rowsToShow", "playlistId"], (data) => {
+chrome.storage.sync.get(["selectedPlaylistId", "rowsToShow", "playlistId", "maxItemsToShow"], (data) => {
     if (data.selectedPlaylistId) {
         selectedPlaylistId = data.selectedPlaylistId;
     }
     if(data.playlistId){
         watchLaterPlaylistId = data.playlistId;
+    }
+    if(data.maxItemsToShow){
+        maxItemsToShow = data.maxItemsToShow;
     }
 });
 
@@ -97,7 +101,7 @@ async function fetchUserPlaylists() {
     try {
         // Fetch user's playlists
         const playlistsResponse = await fetch(
-            `https://www.googleapis.com/youtube/v3/playlists?part=snippet,contentDetails&mine=true&maxResults=50`,
+            `https://www.googleapis.com/youtube/v3/playlists?part=snippet,contentDetails&mine=true&maxResults=${maxItemsToShow}`,
             {
                 headers: {
                     Authorization: `Bearer ${userToken}`,
@@ -121,7 +125,7 @@ async function fetchUserPlaylists() {
 
         // Fetch "Watch Later" playlist items
         const watchLaterResponse = await fetch(
-            `https://www.googleapis.com/youtube/v3/playlistItems?part=snippet,contentDetails&playlistId=WL&maxResults=50`,
+            `https://www.googleapis.com/youtube/v3/playlistItems?part=snippet,contentDetails&playlistId=WL&maxResults=${maxItemsToShow}`,
             {
                 headers: {
                     Authorization: `Bearer ${userToken}`,
@@ -171,7 +175,7 @@ async function fetchPlaylistItems(playlistId) {
     console.log("Fetching items for playlistId:", playlistId);
 
   const response = await fetch(
-    `https://www.googleapis.com/youtube/v3/playlistItems?part=snippet,contentDetails&playlistId=${playlistId}&maxResults=50`,
+    `https://www.googleapis.com/youtube/v3/playlistItems?part=snippet,contentDetails&playlistId=${playlistId}&maxResults=${maxItemsToShow}`,
     {
       headers: {
         Authorization: `Bearer ${userToken}`,
@@ -306,5 +310,10 @@ chrome.tabs.onUpdated.addListener(function (tabId, changeInfo, tab) {
         // Send a message to content.js to re-inject the playlist
         console.log("Sending Refreshing homepage msg...");
         chrome.tabs.sendMessage(tabId, { action: "refreshHomepage" });
+        chrome.storage.sync.get(["maxItemsToShow"], async (data) => {
+            if (data.maxItemsToShow) {
+                maxItemsToShow = data.maxItemsToShow;
+            }
+        });
     }
 });
