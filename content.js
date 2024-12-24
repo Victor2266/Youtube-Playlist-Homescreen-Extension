@@ -197,7 +197,7 @@ observer.observe(document.body, { subtree: true, childList: true });
 // Get initial settings and inject after DOM is ready
 document.addEventListener('DOMContentLoaded', () => {
     console.log("DOMContentLoaded event fired in content.js");
-    chrome.storage.sync.get(["rowsToShow", "itemsPerRow", "selectedPlaylistId", "playlistId"], async (data) => {
+    chrome.storage.sync.get(["rowsToShow", "itemsPerRow", "selectedPlaylistId"], async (data) => {
         if (data.rowsToShow) {
             // Set the number of rows to show based on the stored setting
             rowsToShow = parseInt(data.rowsToShow, 10);
@@ -207,8 +207,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         if (data.selectedPlaylistId) {
             currentPlaylistId = data.selectedPlaylistId;
-        } else if (data.playlistId) {
-            currentPlaylistId = data.playlistId;
         }
 
         // Check authentication and then inject
@@ -258,6 +256,9 @@ chrome.runtime.onMessage.addListener(async (request, sender, sendResponse) => {
             if (data.itemsPerRow) {
                 itemsPerRow = parseInt(data.itemsPerRow, 10);
             }
+            if (data.selectedPlaylistId) {
+                currentPlaylistId = data.selectedPlaylistId;
+            }
         });
         // Re-inject the playlist when the homepage is refreshed
         console.log("Refreshing homepage message received, injecting playlist...");
@@ -268,7 +269,6 @@ chrome.runtime.onMessage.addListener(async (request, sender, sendResponse) => {
             console.log("Rechecking Authentication");
             chrome.runtime.sendMessage({ action: "checkAuthStatus" }, (response) => {
                 isAuthenticated = response.isAuthenticated;
-                currentPlaylistId = response.playlistId;
                 console.log("rowsToShow:", rowsToShow);
                 console.log("Authentication status on refresh:", isAuthenticated);
                 if (isAuthenticated && isOnHomepage() && currentPlaylistId) {

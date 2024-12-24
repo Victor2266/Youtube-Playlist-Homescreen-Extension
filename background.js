@@ -275,8 +275,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     }
      if (request.action === "checkAuthStatus") {
         sendResponse({
-            isAuthenticated: !!userToken,
-            playlistId: selectedPlaylistId || "WL",
+            isAuthenticated: !!userToken
         }); // Send true if userToken exists, false otherwise
     } else if (request.action === "getPlaylistId") {
         sendResponse({ playlistId: selectedPlaylistId || "WL" });
