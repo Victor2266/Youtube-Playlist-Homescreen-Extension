@@ -1,6 +1,7 @@
 // popup.js
 
 document.addEventListener('DOMContentLoaded', () => {
+    const authContainer = document.getElementById('auth-container');
     const authButton = document.getElementById('auth-button');
     const playlistsContainer = document.getElementById('playlists-container');
     const playlistSelect = document.getElementById('playlist-select');
@@ -41,13 +42,20 @@ document.addEventListener('DOMContentLoaded', () => {
     chrome.runtime.sendMessage({ action: "getPlaylists" }, (response) => {
         if (response.data) {
             // User is authenticated, show playlists
-            authButton.style.display = 'none';
+            authContainer.style.display = 'none';
             playlistsContainer.style.display = 'block';
             populatePlaylistSelect(response.data);
         } else {
-            // User is not authenticated, show auth button
-            authButton.style.display = 'block';
+            // User is not authenticated, show auth container
+            authContainer.style.display = 'block';
             playlistsContainer.style.display = 'none';
+        }
+    });
+
+    chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+        if (request.action === "authenticationSuccess") {
+            // Option 1: Reload the popup
+            window.location.reload();
         }
     });
 });

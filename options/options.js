@@ -9,6 +9,16 @@ document.addEventListener("DOMContentLoaded", () => {
     chrome.storage.sync.get(["rowsToShow", "itemsPerRow"], (data) => {
         rowsSelect.value = data.rowsToShow || "1"; // Default to 1
         itemsPerRowSelect.value = data.itemsPerRow || "7"; // Default to 7
+
+        // Fetch and display playlists immediately after loading settings
+        chrome.runtime.sendMessage({ action: "getPlaylists" }, (response) => {
+            if (response.data) {
+                console.log("Playlists:", response.data); // Corrected console log
+                displayPlaylists(response.data);
+            } else {
+                console.error("Error fetching playlists:", response.error);
+            }
+        });
     });
 
     // Save settings when changed
@@ -20,17 +30,6 @@ document.addEventListener("DOMContentLoaded", () => {
         chrome.storage.sync.set({ itemsPerRow: itemsPerRowSelect.value });
     });
 
-    // Fetch and display playlists
-    chrome.runtime.sendMessage({ action: "getPlaylists" }, (response) => {
-        if (response.data) {
-            console.log("Playlists:", playlists);
-            displayPlaylists(response.data);
-        } else {
-            console.error("Error fetching playlists:", response.error);
-        }
-    });
-
-
     function displayPlaylists(playlists) {
         playlistsList.innerHTML = ""; // Clear existing list
 
@@ -41,4 +40,3 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 });
-

@@ -56,6 +56,7 @@ function authenticateUser() {
                   if(items){
                        watchLaterItems = items;
                     notifyContentScript();
+                    chrome.runtime.sendMessage({ action: "authenticationSuccess" });
                 }
 
             })
