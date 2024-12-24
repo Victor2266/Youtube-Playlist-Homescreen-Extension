@@ -26,7 +26,7 @@ function authenticateUser() {
         }
 
         userToken = token;
-        console.log("User authenticated:", userToken);
+        //console.log("User authenticated:", userToken);
 
         fetch(`https://www.googleapis.com/oauth2/v1/tokeninfo?access_token=${userToken}`)
             .then(response => response.json())
@@ -89,7 +89,7 @@ async function fetchUserPlaylists() {
         console.log("User not authenticated.");
         return;
     }
-    console.log("Token in fetchUserPlaylists:", userToken);
+    //console.log("Token in fetchUserPlaylists:", userToken);
     chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
         chrome.tabs.sendMessage(tabs[0].id, { action: "refreshHomepage" });
     });
@@ -167,7 +167,7 @@ async function fetchPlaylistItems(playlistId) {
     return;
   }
 
-    console.log("Token in fetchPlaylistItems:", userToken);
+    //console.log("Token in fetchPlaylistItems:", userToken);
     console.log("Fetching items for playlistId:", playlistId);
 
   const response = await fetch(

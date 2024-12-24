@@ -281,13 +281,3 @@ chrome.runtime.onMessage.addListener(async (request, sender, sendResponse) => {
 
     }
 });
-
-
-// Listen for URL changes (though MutationObserver is more reliable for SPA)
-window.addEventListener('popstate', () => {
-    fetchAndInjectPlaylistIfNeeded(currentPlaylistId);
-});
-
-window.addEventListener('pushstate', () => {
-    fetchAndInjectPlaylistIfNeeded(currentPlaylistId);
-});
