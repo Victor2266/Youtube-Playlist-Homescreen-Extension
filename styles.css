@@ -31,12 +31,17 @@ ytd-app[guide-hidden] #watch-later-extension {
     color: var(--yt-spec-text-primary, #fff);
 }
 
+[guide-persistent-and-visible] .video-grid {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+}
+
 .video-grid {
     display: grid;
     /* Use YouTube's responsive grid layout */
     grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
     gap: 16px;
     margin-bottom: 24px;
+    transition: grid-template-columns 1s;
 }
 
 .video-item {
