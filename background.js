@@ -6,7 +6,7 @@ let selectedPlaylistId = null; // User-selected playlist ID
 let watchLaterPlaylistId = "WL";
 let watchLaterItems = [];
 let playlistTitles = {}; // To store playlist titles
-let maxItemsToShow = 50;
+let maxItemsToShow = 30;
 
 // Load any previously saved settings
 chrome.storage.sync.get(["selectedPlaylistId", "rowsToShow", "playlistId", "maxItemsToShow"], (data) => {
