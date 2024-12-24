@@ -8,4 +8,5 @@ With this addon, the playlist will be front and center in the middle of the YouT
 ![image](https://github.com/user-attachments/assets/9eae0f50-1d54-45ed-987f-1793d7db172b)
 ![image](https://github.com/user-attachments/assets/11161e34-ea8f-45c1-a707-a9a68c3b3bcf)
 
-![image](https://github.com/user-attachments/assets/a9996f84-331e-4315-a9fc-e9072a84c882)
+![image](https://github.com/user-attachments/assets/0ad9f738-9938-409a-b8de-6a72e0962f55)
+
