@@ -153,7 +153,7 @@ function injectPlaylist(playlistItems, playlistId, title, videoDurations) {
     const showMoreButton = document.createElement("a");
     showMoreButton.className = "show-more-button";
     showMoreButton.href = `https://www.youtube.com/playlist?list=${playlistId}`;
-    showMoreButton.textContent = "Open This Playlist";
+    showMoreButton.textContent = "Open Playlist";
     showMoreButton.target = "_blank";
     buttonContainer.appendChild(showMoreButton);
 
@@ -265,7 +265,7 @@ chrome.runtime.onMessage.addListener(async (request, sender, sendResponse) => {
         
         console.log("rowsToShow:", rowsToShow);
         console.log("itemsPerRow:", itemsPerRow);
-        
+
         if (isOnHomepage() && currentPlaylistId && isAuthenticated) {
             await fetchAndInjectPlaylistIfNeeded(currentPlaylistId);
         } else {
