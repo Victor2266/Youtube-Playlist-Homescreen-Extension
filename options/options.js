@@ -2,16 +2,22 @@
 
 document.addEventListener("DOMContentLoaded", () => {
     const rowsSelect = document.getElementById("rows-select");
+    const itemsPerRowInput = document.getElementById("items-per-row");
     const playlistsList = document.getElementById("playlists-list");
 
     // Load current settings
-    chrome.storage.sync.get(["rowsToShow"], (data) => {
+    chrome.storage.sync.get(["rowsToShow", "itemsPerRow"], (data) => {
         rowsSelect.value = data.rowsToShow || "1"; // Default to 1
+        itemsPerRowInput.value = data.itemsPerRow || "7"; // Default to 7
     });
 
     // Save settings when changed
     rowsSelect.addEventListener("change", () => {
         chrome.storage.sync.set({ rowsToShow: rowsSelect.value });
+    });
+
+    itemsPerRowInput.addEventListener("change", () => {
+        chrome.storage.sync.set({ itemsPerRow: itemsPerRowInput.value });
     });
 
     // Fetch and display playlists
