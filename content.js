@@ -190,7 +190,7 @@ function injectPlaylist(playlistItems, playlistId, title, videoDurations) {
 // Mutation Observer to detect DOM changes (for navigation)
 const observer = new MutationObserver((mutations) => {
     if (isOnHomepage()) {
-        chrome.storage.sync.get(["selectedPlaylistId"], async (data) => {
+        chrome.storage.sync.get(["selectedPlaylistId"], async (data) => { // This is important to get the currentPlaylistID
             if (data.selectedPlaylistId) {
                 currentPlaylistId = data.selectedPlaylistId;
             }
@@ -231,6 +231,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
 async function getStoredSettings() {
     //console.log("getStoredSettings...");
+  
+    if (isAuthenticated) { //If the authenticated variable is set then you don't need to reload the other ones
+        console.log("getStoredSettings...2");
+        return;
+    }
+
+    //console.log("getStoredSettings...3");
     return new Promise((resolve) => {
         chrome.storage.sync.get(["rowsToShow", "itemsPerRow", "selectedPlaylistId"], (data) => {
             if (data.rowsToShow) {
