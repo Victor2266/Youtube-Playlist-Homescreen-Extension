@@ -70,6 +70,20 @@ function authenticateUser() {
     });
 }
 
+// Only authenticate user (without fetching playlists)
+function authenticateUserOnly() {
+    chrome.identity.getAuthToken({ interactive: true }, function (token) {
+        if (chrome.runtime.lastError) {
+            console.error("Authentication error:", chrome.runtime.lastError.message);
+            return;
+        }
+        userToken = token;
+        console.log("User authenticated");
+        //console.log("User authenticated:", userToken);
+        chrome.runtime.sendMessage({ action: "authenticationSuccess" });
+    });
+}
+
 // Find "Watch Later" playlist ID
 /*
 function getWatchLaterPlaylistId(playlists) {
@@ -309,6 +323,7 @@ chrome.tabs.onUpdated.addListener(function (tabId, changeInfo, tab) {
     console.log("Change Info:", changeInfo);
     if (changeInfo.status === 'complete') {
         // Send a message to content.js to re-inject the playlist
+        authenticateUserOnly();
         console.log("Sending Refreshing homepage msg...");
         chrome.tabs.sendMessage(tabId, { action: "refreshHomepage" });
         chrome.storage.sync.get(["maxItemsToShow"], async (data) => {
