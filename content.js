@@ -233,11 +233,11 @@ async function getStoredSettings() {
     //console.log("getStoredSettings...");
   
     if (isAuthenticated) { //If the authenticated variable is set then you don't need to reload the other ones
-        console.log("getStoredSettings...2");
+        //console.log("Using Cached Settings");
         return;
     }
 
-    //console.log("getStoredSettings...3");
+    //console.log("Loading from storage...");
     return new Promise((resolve) => {
         chrome.storage.sync.get(["rowsToShow", "itemsPerRow", "selectedPlaylistId"], (data) => {
             if (data.rowsToShow) {
