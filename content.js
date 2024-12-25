@@ -294,7 +294,7 @@ chrome.runtime.onMessage.addListener(async (request, sender, sendResponse) => {
 
     } else if (request.action === "refreshHomepage") {
         getStoredSettings().then(() => {
-            if (isAuthenticated && isOnHomepage() && currentPlaylistId) {
+            if (isAuthenticated && currentPlaylistId) {
                 fetchAndInjectPlaylistIfNeeded(currentPlaylistId);
             }
         })
