@@ -9,6 +9,8 @@ let playlistContainerId = "watch-later-extension"; // Unique ID for the containe
 
 let isAuthenticated = false;
 
+let isCallingAPI = false;
+
 // Helper function to check if we are on the YouTube homepage
 function isOnHomepage() {
     return window.location.pathname === "/";
@@ -29,8 +31,10 @@ async function fetchAndInjectPlaylistIfNeeded(playlistId) {
     //console.log("isOnHomepage():", isOnHomepage());
     if (isOnHomepage()) {
         await fetchAndInjectPlaylist(playlistId);
+        isCallingAPI = false;
     } else {
         removePlaylist(); // Ensure it's removed if we're not on the homepage
+        isCallingAPI = false;
     }
 }
 
@@ -67,7 +71,7 @@ function formatDuration(isoDuration) {
 
 // Function to fetch and inject the playlist
 async function fetchAndInjectPlaylist(playlistId) {
-    //console.log("fetchAndInjectPlaylist...");
+    console.log("fetchAndInjectPlaylist...");
     getStoredSettings().then(() => {
         if (!playlistId) {
             console.error("Playlist ID not available");
@@ -188,15 +192,21 @@ function injectPlaylist(playlistItems, playlistId, title, videoDurations) {
 }
 
 // Mutation Observer to detect DOM changes (for navigation)
+/*
 const observer = new MutationObserver((mutations) => {
     if (isOnHomepage()) {
+        console.log("isauthenticated: ", isAuthenticated);
+        if(!isAuthenticated){
+            return;
+        }
         chrome.storage.sync.get(["selectedPlaylistId"], async (data) => { // This is important to get the currentPlaylistID
             if (data.selectedPlaylistId) {
                 currentPlaylistId = data.selectedPlaylistId;
             }
         });
 
-        if (!document.getElementById(playlistContainerId) && currentPlaylistId) {
+        if (!document.getElementById(playlistContainerId) && currentPlaylistId && !isCallingAPI) {
+            isCallingAPI = true;
             fetchAndInjectPlaylistIfNeeded(currentPlaylistId); // Re-inject if it's gone
         }
         //console.log("!document.getElementById(playlistContainerId): ", !document.getElementById(playlistContainerId));
@@ -210,6 +220,7 @@ const observer = new MutationObserver((mutations) => {
 
 // Start observing the document body for changes
 observer.observe(document.body, { subtree: true, childList: true });
+*/
 
 // Get initial settings and inject after DOM is ready
 document.addEventListener('DOMContentLoaded', () => {

@@ -307,7 +307,7 @@ chrome.storage.onChanged.addListener((changes, area) => {
 chrome.tabs.onUpdated.addListener(function (tabId, changeInfo, tab) {
     console.log("Change info status:", changeInfo.status, "Tab URL:", tab.url);
     console.log("Change Info:", changeInfo);
-    if (changeInfo.status === 'complete' && tab.url === 'https://www.youtube.com/') {
+    if (changeInfo.status === 'complete') {
         // Send a message to content.js to re-inject the playlist
         console.log("Sending Refreshing homepage msg...");
         chrome.tabs.sendMessage(tabId, { action: "refreshHomepage" });
