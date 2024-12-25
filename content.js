@@ -30,9 +30,11 @@ async function fetchAndInjectPlaylistIfNeeded(playlistId) {
     //console.log("fetchAndInjectPlaylistIfNeeded...");
     //console.log("isOnHomepage():", isOnHomepage());
     if (isOnHomepage()) {
+        console.log("This is on homepage.");
         await fetchAndInjectPlaylist(playlistId);
         isCallingAPI = false;
     } else {
+        console.log("This is NOT homepage.");
         removePlaylist(); // Ensure it's removed if we're not on the homepage
         isCallingAPI = false;
     }

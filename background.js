@@ -321,7 +321,7 @@ chrome.storage.onChanged.addListener((changes, area) => {
 chrome.tabs.onUpdated.addListener(function (tabId, changeInfo, tab) {
     console.log("Change info status:", changeInfo.status, "Tab URL:", tab.url);
     console.log("Change Info:", changeInfo);
-    if (changeInfo.status === 'complete') {
+    if (changeInfo.status === 'complete' || changeInfo.audible) {
         // Send a message to content.js to re-inject the playlist
         authenticateUserOnly();
         console.log("Sending Refreshing homepage msg...");
@@ -332,4 +332,5 @@ chrome.tabs.onUpdated.addListener(function (tabId, changeInfo, tab) {
             }
         });
     }
+
 });
