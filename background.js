@@ -67,24 +67,7 @@ function authenticateUser() {
             .catch(error => {
                 console.error("Error fetching or processing playlists:", error);
             });
-            
-        return token;
     });
-}
-
-function refreshAccessToken() {
-    try {
-        const result = chrome.identity.getAuthToken({
-            interactive: true
-        });
-
-        console.log('Auth token retrieved:', result ? 'success' : 'failed');
-        accessToken = result.token;
-        return;
-    } catch (error) {
-        console.error('Detailed auth error:', error);
-        throw new Error(`Authentication failed: ${error.message}`);
-    }
 }
 
 // Find "Watch Later" playlist ID

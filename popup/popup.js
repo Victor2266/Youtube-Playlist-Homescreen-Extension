@@ -37,7 +37,7 @@ document.addEventListener('DOMContentLoaded', () => {
     seeOptionsButton.addEventListener('click', () => {
         chrome.runtime.openOptionsPage();
     });
-    
+
     // Check if user is already authenticated
     chrome.runtime.sendMessage({ action: "getPlaylists" }, (response) => {
         if (response.data) {

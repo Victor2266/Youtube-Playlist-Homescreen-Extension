@@ -68,7 +68,6 @@ function formatDuration(isoDuration) {
 // Function to fetch and inject the playlist
 async function fetchAndInjectPlaylist(playlistId) {
     //console.log("fetchAndInjectPlaylist...");
-   
     getStoredSettings().then(() => {
         if (!playlistId) {
             console.error("Playlist ID not available");
@@ -76,7 +75,6 @@ async function fetchAndInjectPlaylist(playlistId) {
         }
         if (!isAuthenticated) {
             console.log("User not logged in yet.");
-            chrome.runtime.sendMessage({ action: "authenticate" });
             return;
         }
         //console.log("fetchAndInjectPlaylist...2");
@@ -197,10 +195,8 @@ const observer = new MutationObserver((mutations) => {
                 currentPlaylistId = data.selectedPlaylistId;
             }
         });
-        
 
         if (!document.getElementById(playlistContainerId) && currentPlaylistId) {
-            chrome.runtime.sendMessage({ action: "authenticate" });
             fetchAndInjectPlaylistIfNeeded(currentPlaylistId); // Re-inject if it's gone
         }
         //console.log("!document.getElementById(playlistContainerId): ", !document.getElementById(playlistContainerId));
