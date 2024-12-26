@@ -80,7 +80,7 @@ function authenticateUserOnly() {
         userToken = token;
         console.log("User authenticated");
         //console.log("User authenticated:", userToken);
-        chrome.runtime.sendMessage({ action: "authenticationSuccess" });
+        //chrome.runtime.sendMessage({ action: "authenticationSuccess" });
     });
 }
 
