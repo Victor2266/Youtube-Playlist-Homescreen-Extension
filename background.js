@@ -182,6 +182,7 @@ async function fetchPlaylistTitle(playlistId) {
         console.log("User not authenticated.");
         return;
     }
+    console.log("Fetching playlist title for playlistId:", playlistId);
     try {
         const playlistResponse = await fetch(
             `https://www.googleapis.com/youtube/v3/playlists?part=snippet&id=${playlistId}`,
@@ -351,7 +352,7 @@ chrome.storage.onChanged.addListener((changes, area) => {
 
 // Listen for tab updates
 chrome.tabs.onUpdated.addListener(function (tabId, changeInfo, tab) {
-    console.log("Change info status:", changeInfo.status, "Tab URL:", tab.url);
+    //console.log("Change info status:", changeInfo.status, "Tab URL:", tab.url);
     console.log("Change Info:", changeInfo);
     if ((changeInfo.status === 'complete'  || changeInfo.audible) && tab && tab.url && tab.url.includes('youtube.com')) {
         // Send a message to content.js to re-inject the playlist
