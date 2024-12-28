@@ -115,7 +115,7 @@ async function fetchUserPlaylists() {
     try {
         // Fetch user's playlists
         const playlistsResponse = await fetch(
-            `https://www.googleapis.com/youtube/v3/playlists?part=snippet,contentDetails&mine=true`,
+            `https://www.googleapis.com/youtube/v3/playlists?part=snippet,contentDetails&mine=true&maxResults=50`,
             {
                 headers: {
                     Authorization: `Bearer ${userToken}`,
@@ -139,7 +139,7 @@ async function fetchUserPlaylists() {
 
         // Fetch "Watch Later" playlist items
         const watchLaterResponse = await fetch(
-            `https://www.googleapis.com/youtube/v3/playlistItems?part=snippet,contentDetails&playlistId=WL`,
+            `https://www.googleapis.com/youtube/v3/playlistItems?part=snippet,contentDetails&playlistId=WL&maxResults=50`,
             {
                 headers: {
                     Authorization: `Bearer ${userToken}`,
