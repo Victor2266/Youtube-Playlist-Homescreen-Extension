@@ -115,7 +115,7 @@ async function fetchUserPlaylists() {
     try {
         // Fetch user's playlists
         const playlistsResponse = await fetch(
-            `https://www.googleapis.com/youtube/v3/playlists?part=snippet,contentDetails&mine=true&maxResults=${maxItemsToShow}`,
+            `https://www.googleapis.com/youtube/v3/playlists?part=snippet,contentDetails&mine=true`,
             {
                 headers: {
                     Authorization: `Bearer ${userToken}`,
@@ -139,7 +139,7 @@ async function fetchUserPlaylists() {
 
         // Fetch "Watch Later" playlist items
         const watchLaterResponse = await fetch(
-            `https://www.googleapis.com/youtube/v3/playlistItems?part=snippet,contentDetails&playlistId=WL&maxResults=${maxItemsToShow}`,
+            `https://www.googleapis.com/youtube/v3/playlistItems?part=snippet,contentDetails&playlistId=WL`,
             {
                 headers: {
                     Authorization: `Bearer ${userToken}`,
@@ -176,7 +176,37 @@ async function fetchUserPlaylists() {
     }
 }
 
+// Fetches the playlist title given the id to look for and updates playlistTitles[playlist.id]
+async function fetchPlaylistTitle(playlistId) {
+    if (!userToken) {
+        console.log("User not authenticated.");
+        return;
+    }
+    try {
+        const playlistResponse = await fetch(
+            `https://www.googleapis.com/youtube/v3/playlists?part=snippet&id=${playlistId}`,
+            {
+                headers: {
+                    Authorization: `Bearer ${userToken}`,
+                },
+            }
+        );
+        if (!playlistResponse.ok) {
+            console.error("Error fetching playlist title:", playlistResponse.status);
+            return;
+        }
 
+        const playlistData = await playlistResponse.json();
+        if (playlistData && playlistData.items && playlistData.items.length > 0) {
+            const playlist = playlistData.items[0];
+            playlistTitles[playlist.id] = playlist.snippet.title;
+        } else {
+            console.error("Error: Invalid format for playlist title data", playlistData);
+        }
+    } catch (error) {
+        console.error("Error fetching playlist title:", error);
+    }
+}
 
 // Fetch playlist items
 async function fetchPlaylistItems(playlistId) {
@@ -187,6 +217,7 @@ async function fetchPlaylistItems(playlistId) {
 
     //console.log("Token in fetchPlaylistItems:", userToken);
     console.log("Fetching items for playlistId:", playlistId);
+    fetchPlaylistTitle(playlistId); // Ensures that the playlist title is cached
 
   const response = await fetch(
     `https://www.googleapis.com/youtube/v3/playlistItems?part=snippet,contentDetails&playlistId=${playlistId}&maxResults=${maxItemsToShow}`,
