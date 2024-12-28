@@ -217,7 +217,8 @@ async function fetchPlaylistItems(playlistId) {
 
     //console.log("Token in fetchPlaylistItems:", userToken);
     console.log("Fetching items for playlistId:", playlistId);
-    fetchPlaylistTitle(playlistId); // Ensures that the playlist title is cached
+    if (!playlistTitles[playlistId])
+        await fetchPlaylistTitle(playlistId); // Ensures that the playlist title is cached
 
   const response = await fetch(
     `https://www.googleapis.com/youtube/v3/playlistItems?part=snippet,contentDetails&playlistId=${playlistId}&maxResults=${maxItemsToShow}`,
@@ -352,7 +353,7 @@ chrome.storage.onChanged.addListener((changes, area) => {
 chrome.tabs.onUpdated.addListener(function (tabId, changeInfo, tab) {
     console.log("Change info status:", changeInfo.status, "Tab URL:", tab.url);
     console.log("Change Info:", changeInfo);
-    if (changeInfo.status === 'complete' || changeInfo.audible) {
+    if ((changeInfo.status === 'complete'  || changeInfo.audible) && tab && tab.url && tab.url.includes('youtube.com')) {
         // Send a message to content.js to re-inject the playlist
         authenticateUserOnly();
         console.log("Sending Refreshing homepage msg...");
