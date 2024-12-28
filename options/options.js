@@ -12,6 +12,7 @@ document.addEventListener("DOMContentLoaded", () => {
         itemsPerRowSelect.value = data.itemsPerRow || "7"; // Default to 7
         maxItemsSelect.value = data.maxItemsToShow || "30"; // Default to 30
 
+        /*
         // Fetch and display playlists immediately after loading settings
         chrome.runtime.sendMessage({ action: "getPlaylists" }, (response) => {
             if (response.data) {
@@ -20,7 +21,7 @@ document.addEventListener("DOMContentLoaded", () => {
             } else {
                 console.error("Error fetching playlists:", response.error);
             }
-        });
+        });*/
     });
 
     // Save settings when changed
