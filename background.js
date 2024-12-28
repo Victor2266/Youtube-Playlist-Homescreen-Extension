@@ -285,7 +285,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         const playlistId = request.playlistId;
         fetchPlaylistItems(playlistId)
             .then(items => {
-                const title = playlistTitles[playlistId] || "Playlist";
+                const title = playlistTitles[playlistId] || "Playlist"; // Use the cached playlist title if available, otherwise default to "Playlist"
                 sendResponse({ data: items, playlistTitle: title });
             })
             .catch(error => sendResponse({ error: error.message }));
