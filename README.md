@@ -12,7 +12,8 @@ With this addon, the playlist will be **front and center** in the middle of the 
 * **Shortcuts** to:
     * Open the playlist directly.
     * Quickly navigate to 'See All Playlists'.
-
+* **Non Destructive:** the regular homepage is still found below the newly injected playlist.
+  
 **Important Note Regarding "Watch Later":**
 
 ⚠️ **Warning:** YouTube has removed access to the "Watch Later" playlist via their API. Therefore, to use this extension with your "Watch Later" videos, you will need to **transfer them to a different playlist**.
